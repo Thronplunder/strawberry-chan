@@ -1,6 +1,7 @@
-import discord
+# import discord
 import logging
 from discord.ext.commands import Bot
+import playerqueue
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -10,27 +11,64 @@ logger.addHandler(handler)
 
 token = open('token.txt', 'r').read()
 
-print(token)
 
-strawberrychan = Bot(';')
+class strawberrychan(Bot):
+    def __init__(self, prefix):
+        self.queue = playerqueue.playerQueue()
+        Bot.__init__(self, prefix)
+
+    def addplayer(self, playerid):
+        self.queue.addplayer(playerid)
+        if self.queue.getqueuelength() == 10:
+            self.queue.emptyqueue()
+
+    def getPlayerCountString(self):
+        return "{0}/10 Players in queue".format(self.queue.getQueueLength())
+
+    def generatePingAllPlayers(self):
+        pingString = ""
+        for player in self.queue.getPlayers():
+            pingString = pingString + "<@{0.id}> ".format(player)
+        return pingString
 
 
-#@strawberrychan.event
-#async def on_ready():
-#    print("logged in as {0.user}".format(strawberrychan))
+strawberryclient = strawberrychan(';')
 
 
-#@strawberrychan.event
-#async def on_message(message):
-#    if message.author == strawberrychan.user:
-#        return
-#    else:
-#        print("{0.author} send the following: {0.content}".format(message))
-
-
-@strawberrychan.command('queue')
+@strawberryclient.command('queue')
 async def queue(ctx):
-    await ctx.send("Queued!")
+    author = ctx.message.author
+    if author in ctx.bot.queue.getPlayers():
+        await ctx.send("You are already in the Queue!")
+        return
+    ctx.bot.queue.addPlayer(ctx.message.author)
+    await ctx.send("Queued! " + ctx.bot.getPlayerCountString())
+
+    if ctx.bot.queue.getQueueLength() == 10:
+        await ctx.send("Queue is full! " + ctx.bot.generatePingAllPlayers() + "Someone go make Lobby and join, i cant do that yet!")
+        ctx.bot.queue.emptyQueue()
 
 
-strawberrychan.run(token)
+@strawberryclient.command('unqueue')
+async def unqueue(ctx):
+    author = ctx.message.author
+    if author not in ctx.bot.queue.getPlayers():
+        await ctx.send("You need to queue first!")
+        return
+    ctx.bot.queue.removePlayer(ctx.message.author)
+    await ctx.send("Unqueued! " + ctx.bot.getplayerCountString())
+
+
+
+@strawberryclient.command('printqueue')
+async def printQueue(ctx):
+    if ctx.bot.queue.getQueueLength() == 0:
+        await ctx.send("Queue is empty! Where are the players at?")
+        return
+    players = ""
+    for player in ctx.bot.queue.getPlayers():
+        players = players + str(player.name) + " "
+    await ctx.send(players)
+
+
+strawberryclient.run(token)
