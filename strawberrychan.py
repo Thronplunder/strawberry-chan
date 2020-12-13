@@ -1,4 +1,4 @@
-# import discord
+import discord
 import logging
 from discord.ext.commands import Bot
 import playerqueue
@@ -15,7 +15,7 @@ token = open('token.txt', 'r').read()
 class strawberrychan(Bot):
     def __init__(self, prefix):
         self.queue = playerqueue.playerQueue()
-        Bot.__init__(self, prefix)
+        Bot.__init__(self, prefix, status = discord.Status.invisible)
 
     def addplayer(self, playerid):
         self.queue.addplayer(playerid)
@@ -59,6 +59,11 @@ async def queue(ctx):
         await ctx.send("Queue is full! " + ctx.bot.generatePingAllPlayers() + "Someone go make Lobby and join, i cant do that yet!")
         ctx.bot.queue.emptyQueue()
 
+
+@strawberryclient.event
+async def on_ready():
+    print("ready")
+    await strawberryclient.change_presence(status=discord.Status.invisible)
 
 @strawberryclient.command('unqueue')
 async def unqueue(ctx):
