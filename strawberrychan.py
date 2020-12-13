@@ -56,8 +56,7 @@ async def unqueue(ctx):
         await ctx.send("You need to queue first!")
         return
     ctx.bot.queue.removePlayer(ctx.message.author)
-    await ctx.send("Unqueued! " + ctx.bot.getplayerCountString())
-
+    await ctx.send("Unqueued! " + ctx.bot.getPlayerCountString())
 
 
 @strawberryclient.command('printqueue')
@@ -69,6 +68,14 @@ async def printQueue(ctx):
     for player in ctx.bot.queue.getPlayers():
         players = players + str(player.name) + " "
     await ctx.send(players)
+
+@strawberryclient.command('clearqueue')
+async def clearQueue(ctx):
+    if ctx.bot.queue.getQueueLength() == 0:
+        await ctx.send("Queue is already empty!")
+        return
+    ctx.bot.queue.emptyQueue()
+    await ctx.send("Queue was cleared!")
 
 
 strawberryclient.run(token)
