@@ -28,7 +28,7 @@ class strawberrychan(Bot):
     def generatePingAllPlayers(self):
         pingString = ""
         for player in self.queue.getPlayers():
-            pingString = pingString + "<@{0.id}> ".format(player)
+            pingString = pingString + "<@{0.id}>, ".format(player)
         return pingString
 
 
@@ -59,17 +59,20 @@ async def unqueue(ctx):
     await ctx.send("Unqueued! " + ctx.bot.getPlayerCountString())
 
 
-@strawberryclient.command('printqueue')
+@strawberryclient.command('list')
 async def printQueue(ctx):
     if ctx.bot.queue.getQueueLength() == 0:
         await ctx.send("Queue is empty! Where are the players at?")
         return
     players = ""
     for player in ctx.bot.queue.getPlayers():
-        players = players + str(player.name) + " "
-    await ctx.send(players)
+        players = players + str(player.name) + "\n "
+        numPlayers = ctx.bot.queue.getQueueLength()
+        string = "Current Queue {0}: \n {1}".format(numPlayers, players)
+    await ctx.send(string)
 
-@strawberryclient.command('clearqueue')
+
+@strawberryclient.command('clear')
 async def clearQueue(ctx):
     if ctx.bot.queue.getQueueLength() == 0:
         await ctx.send("Queue is already empty!")
