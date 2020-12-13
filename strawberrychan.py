@@ -31,6 +31,17 @@ class strawberrychan(Bot):
             pingString = pingString + "<@{0.id}>, ".format(player)
         return pingString
 
+    def generateCurrentQueue(self):
+        players = ""
+        numPlayers = len(self.queue.getPlayers())
+        if numPlayers == 0:
+            messageString = "Queue is Empty! Where are the players?"
+        else:
+            for player in self.queue.getPlayers():
+                players = players + player.name + "\n"
+            messageString = "__Current Queue: ({0}/10)__ \n {1}".format(numPlayers, players)
+        return messageString
+
 
 strawberryclient = strawberrychan(';')
 
@@ -42,7 +53,7 @@ async def queue(ctx):
         await ctx.send("You are already in the Queue!")
         return
     ctx.bot.queue.addPlayer(ctx.message.author)
-    await ctx.send("Queued! " + ctx.bot.getPlayerCountString())
+    await ctx.send("Queued!\n\n " + ctx.bot.generateCurrentQueue())
 
     if ctx.bot.queue.getQueueLength() == 10:
         await ctx.send("Queue is full! " + ctx.bot.generatePingAllPlayers() + "Someone go make Lobby and join, i cant do that yet!")
@@ -56,20 +67,12 @@ async def unqueue(ctx):
         await ctx.send("You need to queue first!")
         return
     ctx.bot.queue.removePlayer(ctx.message.author)
-    await ctx.send("Unqueued! " + ctx.bot.getPlayerCountString())
+    await ctx.send("Unqueued! \n\n" + ctx.bot.generateCurrentQueue())
 
 
 @strawberryclient.command('list')
 async def printQueue(ctx):
-    if ctx.bot.queue.getQueueLength() == 0:
-        await ctx.send("Queue is empty! Where are the players at?")
-        return
-    players = ""
-    for player in ctx.bot.queue.getPlayers():
-        players = players + str(player.name) + "\n "
-        numPlayers = ctx.bot.queue.getQueueLength()
-        string = "Current Queue {0}: \n {1}".format(numPlayers, players)
-    await ctx.send(string)
+    await ctx.send(ctx.bot.generateCurrentQueue())
 
 
 @strawberryclient.command('clear')
